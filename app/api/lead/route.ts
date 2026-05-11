@@ -11,8 +11,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "All fields are required." }, { status: 400 })
     }
 
-    // 1. Send data to n8n Webhook
-    const n8nBase = "https://n8n-0zzt.srv1353277.hstgr.cloud/webhook"
+    // 1. Send data to n8n Webhook (Try both Production and Test URLs)
+    const n8nBase = "https://n8n-0zzt.srv1353277.hstgr.cloud"
     const webhookId = "bd0476d5-48cb-4ee1-83dc-e040c2122ce8"
     
     const payload = {
@@ -22,22 +22,27 @@ export async function POST(req: Request) {
       sheetId: "1fNUOr1qDTARinbde4BXp7WEuY8GcZKmvV22uzecA2ks"
     }
 
-    // Try to send to n8n (we use a timeout to avoid hanging)
-    try {
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 8000)
-
-      await fetch(`${n8nBase}/${webhookId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-        signal: controller.signal
-      })
-      clearTimeout(timeoutId)
-      console.log("Lead sent to n8n successfully")
-    } catch (webhookError) {
-      console.error("n8n failed, but continuing with backup...")
+    const tryWebhook = async (path: string) => {
+      try {
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 5000)
+        await fetch(`${n8nBase}/${path}/${webhookId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+          signal: controller.signal
+        })
+        clearTimeout(timeoutId)
+      } catch (e) {
+        console.error(`n8n ${path} failed`)
+      }
     }
+
+    // Fire both production and test webhooks for maximum reliability
+    await Promise.all([
+      tryWebhook("webhook"),
+      tryWebhook("webhook-test")
+    ])
 
     // 2. Send Email Backup (using existing logic)
     const emailUser = process.env.EMAIL_USER?.trim()

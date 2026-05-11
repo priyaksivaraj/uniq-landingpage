@@ -47,6 +47,25 @@ export default function LeadFormSection() {
     setLoading(true)
     setSubmitError("")
     try {
+      // 1. Direct Browser-to-n8n submission (Best for bypassing server firewalls)
+      const n8nPayload = {
+        name: form.name,
+        phone: form.phone,
+        degree: form.degree,
+        looking: form.looking,
+        source: "Direct Browser",
+        timestamp: new Date().toISOString()
+      }
+      
+      // We try both Production and Test URLs just in case
+      fetch("https://n8n-0zzt.srv1353277.hstgr.cloud/webhook/bd0476d5-48cb-4ee1-83dc-e040c2122ce8", {
+        method: "POST",
+        mode: "no-cors", // Use no-cors to bypass potential CORS blocks
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(n8nPayload),
+      }).catch(err => console.log("n8n direct failed, falling back to API"))
+
+      // 2. Standard API submission
       const res = await fetch("/api/lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
