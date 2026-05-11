@@ -23,12 +23,21 @@ function candidateDirectories(): string[] {
   if (raw) {
     candidates.push(path.isAbsolute(raw) ? raw : path.join(process.cwd(), raw))
   }
-  candidates.push(path.join(process.cwd(), "data"))
-  candidates.push(path.join(process.cwd(), "..", "data"))
+
   const home = process.env.HOME || process.env.USERPROFILE
-  if (home) {
+  const prod = process.env.NODE_ENV === "production"
+  // Prefer a user-level folder in production so leads survive redeploys of the app directory.
+  if (prod && home) {
     candidates.push(path.join(home, ".uniq-landingpage", "data"))
   }
+
+  candidates.push(path.join(process.cwd(), "data"))
+  candidates.push(path.join(process.cwd(), "..", "data"))
+
+  if (!prod && home) {
+    candidates.push(path.join(home, ".uniq-landingpage", "data"))
+  }
+
   const tmpDir = process.env.TMPDIR?.trim()
   if (tmpDir) {
     candidates.push(path.join(tmpDir, "uniq-landingpage-data"))

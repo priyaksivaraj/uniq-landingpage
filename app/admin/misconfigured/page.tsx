@@ -6,8 +6,7 @@ export default function AdminMisconfiguredPage() {
       <div className="max-w-lg glass-card rounded-2xl border border-white/10 p-8 sm:p-10 text-center">
         <h1 className="text-xl font-black mb-3">Admin</h1>
         <p className="text-white/55 text-sm leading-relaxed mb-6">
-          Sign in from the login page. The default password is <code className="text-red-400/90">admin123</code> unless
-          your host defines <code className="text-white/70">ADMIN_PASSWORD</code>.
+          Admin sign-in could not be completed. Please try again later or contact the site owner.
         </p>
         <Link
           href="/admin/login"

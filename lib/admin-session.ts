@@ -1,15 +1,20 @@
 import { SignJWT, jwtVerify } from "jose"
+import { LEAD_ADMIN_COOKIE } from "./admin-constants"
 
-export const LEAD_ADMIN_COOKIE = "lead_admin"
-
-/** Default login for `/admin` when `ADMIN_PASSWORD` is not set (override on the host for security). */
-export const DEFAULT_ADMIN_PASSWORD = "admin123"
+export { LEAD_ADMIN_COOKIE }
 
 const JWT_ALG = "HS256" as const
 
+/** Server-only fallback when `ADMIN_PASSWORD` is unset; never shown in the UI. */
+const DEFAULT_ADMIN_PASSWORD = "admin123"
+
+/**
+ * Password: `ADMIN_PASSWORD` env if set, otherwise a built-in default (server only, not exposed in UI).
+ */
 export function effectiveAdminPassword(): string {
   const fromEnv = process.env.ADMIN_PASSWORD?.trim()
-  return fromEnv || DEFAULT_ADMIN_PASSWORD
+  if (fromEnv) return fromEnv
+  return DEFAULT_ADMIN_PASSWORD
 }
 
 async function deriveKeyFromPassword(pw: string): Promise<Uint8Array> {
@@ -25,7 +30,11 @@ export async function getJwtSecretKey(): Promise<Uint8Array> {
   if (explicit && explicit.length >= 32) {
     return new TextEncoder().encode(explicit)
   }
-  return deriveKeyFromPassword(effectiveAdminPassword())
+  const pw = effectiveAdminPassword()
+  if (!pw) {
+    throw new Error("Admin password is not configured")
+  }
+  return deriveKeyFromPassword(pw)
 }
 
 export async function createAdminJwt(): Promise<string> {

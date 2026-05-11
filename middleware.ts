@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { LEAD_ADMIN_COOKIE } from "@/lib/admin-session"
+import { LEAD_ADMIN_COOKIE } from "@/lib/admin-constants"
 
 const ADMIN_LOGIN = "/admin/login"
 const MIS = "/admin/misconfigured"
 
 /**
- * Edge middleware cannot rely on runtime-only env (e.g. ADMIN_PASSWORD set only on the host).
+ * Edge middleware only checks cookie shape; JWT verification runs on the Node server.
  * JWT verification runs on the Node server in /admin and API routes instead.
  */
 function hasSessionCookie(token: string | undefined): boolean {

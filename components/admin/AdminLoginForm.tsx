@@ -49,11 +49,8 @@ export default function AdminLoginForm() {
         <div className="flex items-center gap-3 mb-8">
           <ShieldCheck className="w-10 h-10 text-red-600 shrink-0" />
           <div>
-            <h1 className="text-2xl font-black">Lead admin</h1>
-            <p className="text-white/45 text-sm">
-              Default password is <code className="text-red-400/90">admin123</code> unless{" "}
-              <code className="text-white/60">ADMIN_PASSWORD</code> is set on the server.
-            </p>
+            <h1 className="text-2xl font-black">Admin</h1>
+            <p className="text-white/45 text-sm">Sign in with your site password.</p>
           </div>
         </div>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">

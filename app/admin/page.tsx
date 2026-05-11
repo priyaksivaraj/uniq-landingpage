@@ -2,7 +2,7 @@ import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { getLeads, type StoredLead } from "@/lib/leads"
 import { LEAD_ADMIN_COOKIE, verifyAdminSession } from "@/lib/admin-session"
-import { googleSheetEditUrl, isGoogleSheetsConfigured } from "@/lib/google-sheets"
+import { googleSheetEditUrl } from "@/lib/google-sheets"
 import AdminGoogleSheetsForm from "@/components/admin/AdminGoogleSheetsForm"
 import AdminLeadToolbar from "@/components/admin/AdminLeadToolbar"
 
@@ -21,7 +21,7 @@ function LeadsTable({ leads }: { leads: StoredLead[] }) {
   if (leads.length === 0) {
     return (
       <p className="text-white/50 text-center py-16 border border-white/10 rounded-xl bg-white/[0.02]">
-        No submissions yet. They will appear here when visitors submit the landing page form.
+        No submissions yet.
       </p>
     )
   }
@@ -63,35 +63,13 @@ export default async function AdminPage() {
   }
 
   const leads = getLeads()
-  const usingDefaultPassword = !process.env.ADMIN_PASSWORD?.trim()
   const sheetUrl = googleSheetEditUrl()
-  const sheetsLive = isGoogleSheetsConfigured()
 
   return (
     <div className="min-h-screen bg-[#050505] text-white p-6 sm:p-10">
       <div className="max-w-6xl mx-auto">
         <header className="mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-black tracking-tight">Form submissions</h1>
-            <p className="text-white/45 text-sm mt-1">
-              Stored on this server in data/leads.json. Sessions use signed cookies.
-              {usingDefaultPassword && (
-                <span className="block text-amber-400/90 mt-2">
-                  You are using the default admin password. Set <code className="text-white/80">ADMIN_PASSWORD</code>{" "}
-                  on Hostinger for better security.
-                </span>
-              )}
-            </p>
-            {sheetsLive && (
-              <p className="text-emerald-400/90 text-sm mt-2">New leads are also appended to your Google Sheet.</p>
-            )}
-            {sheetUrl && !sheetsLive && (
-              <p className="text-amber-400/90 text-sm mt-2">
-                Spreadsheet ID is set but the service account email or private key is missing — complete the Google
-                Sheets block below or set environment variables.
-              </p>
-            )}
-          </div>
+          <h1 className="text-3xl font-black tracking-tight">Form submissions</h1>
           {sheetUrl && (
             <a
               href={sheetUrl}

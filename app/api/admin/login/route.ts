@@ -3,6 +3,8 @@ import { LEAD_ADMIN_COOKIE, createAdminJwt, effectiveAdminPassword } from "@/lib
 import { shouldUseSecureAdminCookie } from "@/lib/admin-cookie"
 
 export async function POST(req: Request) {
+  const expected = effectiveAdminPassword()
+
   let body: { password?: string }
   try {
     body = await req.json()
@@ -10,11 +12,19 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 })
   }
 
-  if (body.password !== effectiveAdminPassword()) {
+  if (body.password !== expected) {
     return NextResponse.json({ error: "Invalid password" }, { status: 401 })
   }
 
-  const jwt = await createAdminJwt()
+  let jwt: string
+  try {
+    jwt = await createAdminJwt()
+  } catch {
+    return NextResponse.json(
+      { error: "Could not create a session. Set ADMIN_SESSION_SECRET (32+ characters) on the server." },
+      { status: 503 },
+    )
+  }
 
   const maxSec = Math.min(
     Math.max(parseInt(process.env.ADMIN_SESSION_MAX_SECONDS || `${8 * 3600}`, 10), 300),

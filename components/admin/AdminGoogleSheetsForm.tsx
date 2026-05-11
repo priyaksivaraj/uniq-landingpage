@@ -137,10 +137,6 @@ export default function AdminGoogleSheetsForm() {
         <Globe className="w-6 h-6 text-red-500 shrink-0" />
         <div>
           <h2 className="text-xl font-bold">Google Sheets</h2>
-          <p className="text-white/45 text-sm mt-0.5">
-            Option A credentials stored on this server in <code className="text-red-400/90">data/app-settings.json</code>
-            . Share the spreadsheet with the service account email as Editor.
-          </p>
         </div>
       </div>
 
@@ -200,10 +196,6 @@ export default function AdminGoogleSheetsForm() {
             }
             className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 outline-none focus:border-red-600 text-xs font-mono"
           />
-          <p className="text-white/35 text-xs mt-1.5">
-            Stored only on the server file above. Never committed if <code className="text-white/50">data/app-settings.json</code> is
-            gitignored.
-          </p>
         </div>
       </div>
 
