@@ -2,6 +2,9 @@
 
 import { useState } from "react"
 import { CheckCircle, ArrowRight, Loader2 } from "lucide-react"
+import { Turnstile } from "@marsidev/react-turnstile"
+
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
 
 export default function LeadFormSection() {
   const [submitted, setSubmitted] = useState(false)
@@ -36,6 +39,7 @@ export default function LeadFormSection() {
   }
 
   const [submitError, setSubmitError] = useState("")
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -44,28 +48,13 @@ export default function LeadFormSection() {
       setErrors(validationErrors)
       return
     }
+    if (TURNSTILE_SITE_KEY && !turnstileToken) {
+      setSubmitError("Please complete the verification challenge below.")
+      return
+    }
     setLoading(true)
     setSubmitError("")
     try {
-      // 1. Direct Browser-to-n8n submission (Best for bypassing server firewalls)
-      const n8nPayload = {
-        name: form.name,
-        phone: form.phone,
-        degree: form.degree,
-        looking: form.looking,
-        source: "Direct Browser",
-        timestamp: new Date().toISOString()
-      }
-      
-      // We try both Production and Test URLs just in case
-      fetch("https://n8n-0zzt.srv1353277.hstgr.cloud/webhook/bd0476d5-48cb-4ee1-83dc-e040c2122ce8", {
-        method: "POST",
-        mode: "no-cors", // Use no-cors to bypass potential CORS blocks
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(n8nPayload),
-      }).catch(err => console.log("n8n direct failed, falling back to API"))
-
-      // 2. Standard API submission
       const res = await fetch("/api/lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -74,6 +63,7 @@ export default function LeadFormSection() {
           phone: form.phone,
           degree: form.degree,
           looking: form.looking,
+          ...(turnstileToken ? { turnstileToken } : {}),
         }),
       })
       const data = await res.json()
@@ -227,6 +217,17 @@ export default function LeadFormSection() {
                 <p className="text-red-400 text-sm text-center bg-red-500/10 border border-red-500/20 rounded-lg py-2 px-4">
                   {submitError}
                 </p>
+              )}
+
+              {TURNSTILE_SITE_KEY && (
+                <div className="flex justify-center pt-1">
+                  <Turnstile
+                    siteKey={TURNSTILE_SITE_KEY}
+                    onSuccess={setTurnstileToken}
+                    onExpire={() => setTurnstileToken(null)}
+                    onError={() => setTurnstileToken(null)}
+                  />
+                </div>
               )}
 
               {/* Submit Button */}

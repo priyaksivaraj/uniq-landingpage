@@ -24,3 +24,7 @@ env/
 venv/
 ENV/
 .next/
+# Lead PII — do not commit
+data/leads.json
+# Admin-stored secrets (Google private key, etc.)
+data/app-settings.json
