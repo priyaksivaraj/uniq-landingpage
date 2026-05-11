@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { LEAD_ADMIN_COOKIE, createAdminJwt, effectiveAdminPassword } from "@/lib/admin-session"
+import { shouldUseSecureAdminCookie } from "@/lib/admin-cookie"
 
 export async function POST(req: Request) {
   let body: { password?: string }
@@ -24,8 +25,8 @@ export async function POST(req: Request) {
   res.cookies.set(LEAD_ADMIN_COOKIE, jwt, {
     httpOnly: true,
     path: "/",
-    sameSite: "strict",
-    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    secure: shouldUseSecureAdminCookie(req),
     maxAge: maxSec,
   })
   return res

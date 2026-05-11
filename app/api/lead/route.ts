@@ -71,7 +71,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           error:
-            "We could not save your details on the server (storage error). The site owner should set LEADS_DATA_DIR to a writable folder or fix file permissions.",
+            "We could not save your details on the server (storage error). The host should allow writes to the app data folder, or set LEADS_DATA_DIR to a writable path.",
           code: "STORAGE_ERROR",
         },
         { status: 503 },
