@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useSearchParams } from "next/navigation"
-import { Loader2, ShieldCheck } from "lucide-react"
+import { AlertCircle, ArrowRight, Loader2 } from "lucide-react"
 
 function safeNextPath(raw: string | null): string {
   if (!raw) return "/admin"
@@ -45,34 +45,36 @@ export default function AdminLoginForm() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center p-6">
-      <div className="w-full max-w-md glass-card rounded-2xl border border-white/10 p-8 sm:p-10">
-        <div className="flex items-center gap-3 mb-8">
-          <ShieldCheck className="w-10 h-10 text-red-600 shrink-0" />
-          <div>
-            <h1 className="text-2xl font-black">Admin</h1>
-            <p className="text-white/45 text-sm">Sign in with your site password.</p>
-          </div>
-        </div>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div>
-            <label className="text-xs uppercase tracking-widest text-white/40 mb-1.5 block">Password</label>
-            <input
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 outline-none focus:border-red-600 transition-colors"
-            />
-          </div>
-          {error && (
-            <p className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-lg py-2 px-3">{error}</p>
-          )}
+      <div className="w-full max-w-xs">
+        <h1 className="text-3xl sm:text-4xl font-black tracking-[0.35em] text-center mb-10 text-white">
+          LOGIN
+        </h1>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          <input
+            type="password"
+            name="password"
+            autoComplete="current-password"
+            aria-label="Password"
+            placeholder=""
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className={`w-full bg-white/5 border rounded-lg px-4 py-3.5 outline-none transition-colors text-white placeholder:text-white/25 focus:border-red-600 ${
+              error ? "border-red-500 ring-1 ring-red-500/50" : "border-white/10"
+            }`}
+          />
+          {error ? (
+            <div className="flex justify-center" role="alert">
+              <span className="sr-only">{error}</span>
+              <AlertCircle className="w-5 h-5 text-red-500" strokeWidth={2} aria-hidden />
+            </div>
+          ) : null}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-60 py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition-colors"
+            aria-label="Submit"
+            className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-600 hover:bg-red-700 disabled:opacity-60 transition-colors"
           >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Sign in"}
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" aria-hidden /> : <ArrowRight className="w-5 h-5" aria-hidden />}
           </button>
         </form>
       </div>
