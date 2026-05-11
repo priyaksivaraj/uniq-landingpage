@@ -33,7 +33,6 @@ export default function ThankYouPage() {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(interval)
-          router.push("/")
           return 0
         }
         return prev - 1
@@ -41,7 +40,14 @@ export default function ThankYouPage() {
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [router])
+  }, [])
+
+  // Separate effect for redirect to avoid state-update-during-render error
+  useEffect(() => {
+    if (countdown === 0) {
+      router.push("/")
+    }
+  }, [countdown, router])
 
   return (
     <main className="min-h-screen bg-black flex flex-col items-center justify-center px-4 relative overflow-hidden">

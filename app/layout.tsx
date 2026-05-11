@@ -34,7 +34,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} bg-background`}>
+    <html lang="en" className={`${inter.variable} bg-background`} data-scroll-behavior="smooth">
       <body className="font-sans antialiased bg-black text-white">
         {children}
       </body>
