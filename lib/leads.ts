@@ -1,6 +1,7 @@
 import fs from "fs"
 import path from "path"
 import crypto from "crypto"
+import { getDataDirectory } from "@/lib/data-dir"
 
 export type StoredLead = {
   id: string
@@ -11,16 +12,19 @@ export type StoredLead = {
   looking: string
 }
 
-const DATA_DIR = path.join(process.cwd(), "data")
-const LEADS_FILE = path.join(DATA_DIR, "leads.json")
+function leadsFilePath(): string {
+  return path.join(getDataDirectory(), "leads.json")
+}
 
 function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true })
+  const dir = getDataDirectory()
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true })
   }
 }
 
 function readLeadsFile(): StoredLead[] {
+  const LEADS_FILE = leadsFilePath()
   try {
     if (!fs.existsSync(LEADS_FILE)) return []
     const raw = fs.readFileSync(LEADS_FILE, "utf-8")
@@ -50,17 +54,27 @@ export function appendLead(input: {
   degree: string
   looking: string
 }): StoredLead {
-  ensureDataDir()
-  const leads = readLeadsFile()
-  const row: StoredLead = {
-    id: crypto.randomUUID(),
-    createdAt: new Date().toISOString(),
-    name: input.name.trim(),
-    phone: input.phone.trim(),
-    degree: input.degree,
-    looking: input.looking,
+  const dir = getDataDirectory()
+  const LEADS_FILE = leadsFilePath()
+  try {
+    ensureDataDir()
+    const leads = readLeadsFile()
+    const row: StoredLead = {
+      id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+      name: input.name.trim(),
+      phone: input.phone.trim(),
+      degree: input.degree,
+      looking: input.looking,
+    }
+    leads.push(row)
+    fs.writeFileSync(LEADS_FILE, JSON.stringify(leads, null, 2), "utf-8")
+    return row
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    console.error("[leads] write failed:", { dir: dir, file: LEADS_FILE, error: msg })
+    throw new Error(
+      `Could not write lead storage under "${dir}". Set env LEADS_DATA_DIR to a writable absolute path (e.g. on Hostinger: /home/youruser/app-data). Original error: ${msg}`,
+    )
   }
-  leads.push(row)
-  fs.writeFileSync(LEADS_FILE, JSON.stringify(leads, null, 2), "utf-8")
-  return row
 }

@@ -1,8 +1,10 @@
 import fs from "fs"
 import path from "path"
+import { getDataDirectory } from "@/lib/data-dir"
 
-const DATA_DIR = path.join(process.cwd(), "data")
-const SETTINGS_PATH = path.join(DATA_DIR, "app-settings.json")
+function settingsPath(): string {
+  return path.join(getDataDirectory(), "app-settings.json")
+}
 
 export type GoogleSheetsStored = {
   spreadsheetId?: string
@@ -16,16 +18,18 @@ export type AppSettingsFile = {
 }
 
 function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true })
+  const dir = getDataDirectory()
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true })
   }
 }
 
 export function getAppSettings(): AppSettingsFile {
   try {
     ensureDataDir()
-    if (!fs.existsSync(SETTINGS_PATH)) return {}
-    const raw = fs.readFileSync(SETTINGS_PATH, "utf-8")
+    const sp = settingsPath()
+    if (!fs.existsSync(sp)) return {}
+    const raw = fs.readFileSync(sp, "utf-8")
     const parsed = JSON.parse(raw) as unknown
     if (typeof parsed !== "object" || parsed === null) return {}
     return parsed as AppSettingsFile
@@ -152,5 +156,5 @@ export function saveGoogleSheetsFromAdmin(input: {
     ...current,
     googleSheets: gs,
   }
-  fs.writeFileSync(SETTINGS_PATH, JSON.stringify(next, null, 2), "utf-8")
+  fs.writeFileSync(settingsPath(), JSON.stringify(next, null, 2), "utf-8")
 }

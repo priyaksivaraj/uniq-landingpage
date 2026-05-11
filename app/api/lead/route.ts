@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server"
 import nodemailer from "nodemailer"
 import { appendLead } from "@/lib/leads"
-import { appendLeadToGoogleSheet } from "@/lib/google-sheets"
 import { getClientIp } from "@/lib/client-ip"
 import { checkLeadRateLimit } from "@/lib/rate-limit"
 import { isTurnstileRequired, verifyTurnstileToken } from "@/lib/turnstile"
@@ -27,7 +26,13 @@ export async function POST(req: Request) {
       )
     }
 
-    const data = (await req.json()) as Record<string, unknown>
+    let data: Record<string, unknown>
+    try {
+      data = await req.json()
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 })
+    }
+
     const { name, phone, degree, looking, turnstileToken } = data as {
       name?: unknown
       phone?: unknown
@@ -53,14 +58,28 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "All fields are required." }, { status: 400 })
     }
 
-    const stored = appendLead({
-      name: String(name),
-      phone: String(phone),
-      degree: String(degree),
-      looking: String(looking),
-    })
+    let stored
+    try {
+      stored = appendLead({
+        name: String(name),
+        phone: String(phone),
+        degree: String(degree),
+        looking: String(looking),
+      })
+    } catch (e) {
+      console.error("[api/lead] appendLead:", e)
+      return NextResponse.json(
+        {
+          error:
+            "We could not save your details on the server (storage error). The site owner should set LEADS_DATA_DIR to a writable folder or fix file permissions.",
+          code: "STORAGE_ERROR",
+        },
+        { status: 503 },
+      )
+    }
 
     try {
+      const { appendLeadToGoogleSheet } = await import("@/lib/google-sheets")
       await appendLeadToGoogleSheet(stored)
     } catch (e) {
       console.error("Google Sheets append failed:", e)
@@ -101,6 +120,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("Form error:", error)
-    return NextResponse.json({ error: "Submission failed" }, { status: 500 })
+    const expose =
+      process.env.NODE_ENV !== "production" || process.env.EXPOSE_SERVER_ERRORS === "true"
+    const message = expose && error instanceof Error ? error.message : "Submission failed"
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
