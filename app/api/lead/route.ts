@@ -12,23 +12,31 @@ export async function POST(req: Request) {
     }
 
     // 1. Send data to n8n Webhook
-    const n8nWebhookUrl = "https://n8n-0zzt.srv1353277.hstgr.cloud/webhook/bd0476d5-48cb-4ee1-83dc-e040c2122ce8"
+    const n8nBase = "https://n8n-0zzt.srv1353277.hstgr.cloud/webhook"
+    const webhookId = "bd0476d5-48cb-4ee1-83dc-e040c2122ce8"
     
-    // We fire this in the background but wait for it to ensure success
+    const payload = {
+      ...data,
+      source: "UniqJobs Landing Page",
+      timestamp: new Date().toISOString(),
+      sheetId: "1fNUOr1qDTARinbde4BXp7WEuY8GcZKmvV22uzecA2ks"
+    }
+
+    // Try to send to n8n (we use a timeout to avoid hanging)
     try {
-      await fetch(n8nWebhookUrl, {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 8000)
+
+      await fetch(`${n8nBase}/${webhookId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...data,
-          source: "UniqJobs Landing Page",
-          timestamp: new Date().toISOString(),
-          googleSheetUrl: "https://docs.google.com/spreadsheets/d/1fNUOr1qDTARinbde4BXp7WEuY8GcZKmvV22uzecA2ks/edit?gid=0#gid=0"
-        }),
+        body: JSON.stringify(payload),
+        signal: controller.signal
       })
+      clearTimeout(timeoutId)
+      console.log("Lead sent to n8n successfully")
     } catch (webhookError) {
-      console.error("n8n Webhook failed:", webhookError)
-      // We continue anyway to send the email backup
+      console.error("n8n failed, but continuing with backup...")
     }
 
     // 2. Send Email Backup (using existing logic)
