@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import { Loader2, ShieldCheck } from "lucide-react"
 
 function safeNextPath(raw: string | null): string {
@@ -12,7 +12,6 @@ function safeNextPath(raw: string | null): string {
 }
 
 export default function AdminLoginForm() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
@@ -35,8 +34,8 @@ export default function AdminLoginForm() {
         return
       }
       const next = safeNextPath(searchParams.get("next"))
-      router.replace(next)
-      router.refresh()
+      // Full navigation so the Set-Cookie from the API is always applied before /admin loads (Hostinger / HTTPS).
+      window.location.assign(next)
     } catch {
       setError("Network error")
     } finally {

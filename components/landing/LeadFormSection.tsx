@@ -66,9 +66,13 @@ export default function LeadFormSection() {
           ...(turnstileToken ? { turnstileToken } : {}),
         }),
       })
-      const data = await res.json()
+      const data = await res.json().catch(() => ({}))
       if (!res.ok) {
-        setSubmitError(data.error || "Something went wrong. Please try again.")
+        let err = (typeof data.error === "string" && data.error) || "Something went wrong. Please try again."
+        if (typeof data.details === "string" && data.details.trim()) {
+          err += `\n\n${data.details.trim()}`
+        }
+        setSubmitError(err)
       } else {
         // Clear old flag so conversion fires fresh for this new submission
         sessionStorage.removeItem("conversion_tracked")
@@ -214,7 +218,7 @@ export default function LeadFormSection() {
 
               {/* Server error message */}
               {submitError && (
-                <p className="text-red-400 text-sm text-center bg-red-500/10 border border-red-500/20 rounded-lg py-2 px-4">
+                <p className="text-red-400 text-sm text-center bg-red-500/10 border border-red-500/20 rounded-lg py-2 px-4 whitespace-pre-wrap break-words">
                   {submitError}
                 </p>
               )}

@@ -43,9 +43,13 @@ function readLeadsFile(): StoredLead[] {
 }
 
 export function getLeads(): StoredLead[] {
-  return readLeadsFile().sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  )
+  try {
+    return readLeadsFile().sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    )
+  } catch {
+    return []
+  }
 }
 
 export function appendLead(input: {
@@ -54,9 +58,9 @@ export function appendLead(input: {
   degree: string
   looking: string
 }): StoredLead {
-  const dir = getDataDirectory()
-  const LEADS_FILE = leadsFilePath()
   try {
+    const dir = getDataDirectory()
+    const LEADS_FILE = leadsFilePath()
     ensureDataDir()
     const leads = readLeadsFile()
     const row: StoredLead = {
@@ -72,9 +76,11 @@ export function appendLead(input: {
     return row
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)
-    console.error("[leads] write failed:", { dir: dir, file: LEADS_FILE, error: msg })
+    console.error("[leads] write failed:", msg)
     throw new Error(
-      `Could not write lead storage under "${dir}". Set env LEADS_DATA_DIR to a writable absolute path (e.g. on Hostinger: /home/youruser/app-data). Original error: ${msg}`,
+      msg.startsWith("[data-dir]")
+        ? msg
+        : `Could not save lead file. ${msg}. Set LEADS_DATA_DIR to a writable absolute path on your Hostinger account.`,
     )
   }
 }

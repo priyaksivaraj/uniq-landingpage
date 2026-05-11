@@ -9,6 +9,19 @@ export function shouldUseSecureAdminCookie(req: Request): boolean {
   const forwarded = req.headers.get("x-forwarded-proto")?.split(",")[0]?.trim().toLowerCase()
   if (forwarded === "https") return true
 
+  const ssl = req.headers.get("x-forwarded-ssl")?.trim().toLowerCase()
+  if (ssl === "on") return true
+
+  try {
+    const cf = req.headers.get("cf-visitor")
+    if (cf) {
+      const j = JSON.parse(cf) as { scheme?: string }
+      if (j?.scheme === "https") return true
+    }
+  } catch {
+    /* ignore */
+  }
+
   try {
     const u = new URL(req.url)
     return u.protocol === "https:"

@@ -67,12 +67,14 @@ export async function POST(req: Request) {
         looking: String(looking),
       })
     } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e)
       console.error("[api/lead] appendLead:", e)
       return NextResponse.json(
         {
           error:
-            "We could not save your details on the server (storage error). The host should allow writes to the app data folder, or set LEADS_DATA_DIR to a writable path.",
+            "We could not save your details on the server (storage error). Ask your host to allow file writes or set LEADS_DATA_DIR to a folder the Node app can write to.",
           code: "STORAGE_ERROR",
+          details: msg.slice(0, 600),
         },
         { status: 503 },
       )
