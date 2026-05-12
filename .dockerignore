@@ -1,54 +1,25 @@
 node_modules
-.next
-out
-build
-dist
-coverage
-
-# Logs / debug
 npm-debug.log
 yarn-error.log
-logs
-*.log
-
-# Lockfiles for OTHER package managers (we use npm in the Dockerfile,
-# leaving these in would just bloat the image and can confuse Next.js).
-pnpm-lock.yaml
-yarn.lock
-
-# VCS / IDE / OS
 .git
 .gitignore
-.gitattributes
+README.md
+.env
 .vscode
 .idea
 .DS_Store
-Thumbs.db
-
-# Secrets — must NEVER be baked into the image
-.env
-.env.*
-!.env.example
-
-# Local lead PII — must NEVER be baked into the image
-data
-data/
-
-# Docker / CI metadata
+__pycache__
+.pytest_cache
+venv/
+env/
+.pyc
 Dockerfile
 docker-compose.yml
 .dockerignore
-.github
-
-# Python leftovers
-__pycache__
-.pytest_cache
-venv
-env
-*.pyc
-
-# Misc caches
-.cache
-.sass-cache
-.eslintcache
-tmp
+logs/
+tmp/
+.cache/
+build/
+dist/
+coverage/
+.sass-cache/
