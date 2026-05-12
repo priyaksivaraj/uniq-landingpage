@@ -14,7 +14,7 @@ export default function ThankYouPage() {
 
     let gtagPoll: ReturnType<typeof setInterval> | null = null
 
-    // Fire Google Ads conversion once per tab session (after gtag.js is ready)
+    // Google Ads conversion once per tab (after gtag.js is ready).
     if (!sessionStorage.getItem("conversion_tracked")) {
       let attempts = 0
       const maxAttempts = 50

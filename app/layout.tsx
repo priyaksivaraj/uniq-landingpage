@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import Script from 'next/script'
+import GoogleAdsGtag from '@/components/analytics/GoogleAdsGtag'
+import GoogleTagManager from '@/components/analytics/GoogleTagManager'
 import './globals.css'
 
 const inter = Inter({
@@ -37,18 +38,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} bg-background`} data-scroll-behavior="smooth">
       <body className="font-sans antialiased bg-black text-white">
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=AW-18086645889"
-          strategy="afterInteractive"
-        />
-        <Script id="google-ads-gtag" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'AW-18086645889');
-          `}
-        </Script>
+        <GoogleTagManager />
+        <GoogleAdsGtag />
         {children}
       </body>
     </html>
