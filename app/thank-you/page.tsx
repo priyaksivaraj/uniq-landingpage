@@ -10,22 +10,35 @@ export default function ThankYouPage() {
   const [countdown, setCountdown] = useState(5)
 
   useEffect(() => {
-    // Fire conversion ONCE per session using sessionStorage guard
+    const ADS_SEND_TO = "AW-18086645889/i5c5CMqG-Z8cEIGhsbBD"
+
+    let gtagPoll: ReturnType<typeof setInterval> | null = null
+
+    // Fire Google Ads conversion once per tab session (after gtag.js is ready)
     if (!sessionStorage.getItem("conversion_tracked")) {
-      // --- Google Ads conversion (replace with your actual send_to value) ---
-      if (typeof window !== "undefined" && (window as any).gtag) {
-        ;(window as any).gtag("event", "conversion", {
-          send_to: "AW-XXXXXXXXX/XXXXXXX", // <-- replace with your Google Ads conversion ID
-        })
-      }
+      let attempts = 0
+      const maxAttempts = 50
+      gtagPoll = window.setInterval(() => {
+        attempts++
+        const gtag = (window as Window & { gtag?: (...args: unknown[]) => void }).gtag
+        if (typeof gtag === "function") {
+          gtag("event", "conversion", { send_to: ADS_SEND_TO })
+          sessionStorage.setItem("conversion_tracked", "true")
+          if (gtagPoll) window.clearInterval(gtagPoll)
+          gtagPoll = null
+        } else if (attempts >= maxAttempts) {
+          if (gtagPoll) window.clearInterval(gtagPoll)
+          gtagPoll = null
+        }
+      }, 100)
+    }
 
-      // --- Meta Pixel Lead event ---
-      if (typeof window !== "undefined" && (window as any).fbq) {
-        ;(window as any).fbq("track", "Lead")
+    // --- Meta Pixel Lead event ---
+    if (!sessionStorage.getItem("meta_lead_tracked")) {
+      if (typeof window !== "undefined" && (window as Window & { fbq?: (...args: unknown[]) => void }).fbq) {
+        ;(window as Window & { fbq: (...args: unknown[]) => void }).fbq("track", "Lead")
       }
-
-      // Lock: prevent any further fires this session
-      sessionStorage.setItem("conversion_tracked", "true")
+      sessionStorage.setItem("meta_lead_tracked", "true")
     }
 
     // Auto-redirect countdown
@@ -39,7 +52,10 @@ export default function ThankYouPage() {
       })
     }, 1000)
 
-    return () => clearInterval(interval)
+    return () => {
+      clearInterval(interval)
+      if (gtagPoll) window.clearInterval(gtagPoll)
+    }
   }, [])
 
   // Separate effect for redirect to avoid state-update-during-render error

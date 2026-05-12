@@ -3,11 +3,12 @@
 import { useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { AlertCircle, ArrowRight, Loader2 } from "lucide-react"
+import { ADMIN_BASE_PATH } from "@/lib/admin-constants"
 
 function safeNextPath(raw: string | null): string {
-  if (!raw) return "/admin"
-  if (!raw.startsWith("/admin")) return "/admin"
-  if (raw.startsWith("//") || raw.includes("..")) return "/admin"
+  if (!raw) return ADMIN_BASE_PATH
+  if (!raw.startsWith(ADMIN_BASE_PATH)) return ADMIN_BASE_PATH
+  if (raw.startsWith("//") || raw.includes("..")) return ADMIN_BASE_PATH
   return raw
 }
 
@@ -34,7 +35,7 @@ export default function AdminLoginForm() {
         return
       }
       const next = safeNextPath(searchParams.get("next"))
-      // Full navigation so the Set-Cookie from the API is always applied before /admin loads (Hostinger / HTTPS).
+      // Full navigation so the Set-Cookie from the API is always applied before admin UI loads (Hostinger / HTTPS).
       window.location.assign(next)
     } catch {
       setError("Network error")

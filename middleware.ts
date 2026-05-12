@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { LEAD_ADMIN_COOKIE } from "@/lib/admin-constants"
+import { ADMIN_BASE_PATH, LEAD_ADMIN_COOKIE } from "@/lib/admin-constants"
 
-const ADMIN_LOGIN = "/admin/login"
-const MIS = "/admin/misconfigured"
+const ADMIN_LOGIN = `${ADMIN_BASE_PATH}/login`
+const MIS = `${ADMIN_BASE_PATH}/misconfigured`
 
 /**
  * Edge middleware only checks cookie shape; JWT verification runs on the Node server.
- * JWT verification runs on the Node server in /admin and API routes instead.
+ * JWT verification runs on the Node server in admin UI and API routes instead.
  */
 function hasSessionCookie(token: string | undefined): boolean {
   if (!token || token.length < 30) return false
@@ -17,7 +17,13 @@ function hasSessionCookie(token: string | undefined): boolean {
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
-  if (!pathname.startsWith("/admin")) {
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+    const u = req.nextUrl.clone()
+    u.pathname = pathname.replace(/^\/admin/, ADMIN_BASE_PATH)
+    return NextResponse.redirect(u)
+  }
+
+  if (!pathname.startsWith(ADMIN_BASE_PATH)) {
     return NextResponse.next()
   }
 
@@ -40,5 +46,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin", "/admin/:path*"],
+  matcher: ["/admin", "/admin/:path*", "/infozunb-admin", "/infozunb-admin/:path*"],
 }

@@ -1,6 +1,7 @@
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { getLeads, type StoredLead } from "@/lib/leads"
+import { ADMIN_BASE_PATH } from "@/lib/admin-constants"
 import { LEAD_ADMIN_COOKIE, verifyAdminSession } from "@/lib/admin-session"
 import { googleSheetEditUrl } from "@/lib/google-sheets"
 import AdminGoogleSheetsForm from "@/components/admin/AdminGoogleSheetsForm"
@@ -59,7 +60,7 @@ export default async function AdminPage() {
   const authed = await verifyAdminSession(cookieStore.get(LEAD_ADMIN_COOKIE)?.value)
 
   if (!authed) {
-    redirect("/admin/login")
+    redirect(`${ADMIN_BASE_PATH}/login`)
   }
 
   const leads = getLeads()
