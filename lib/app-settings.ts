@@ -43,6 +43,22 @@ function fileStr(v: string | undefined): string | undefined {
   return t || undefined
 }
 
+function envStr(...keys: string[]): string | undefined {
+  for (const k of keys) {
+    const t = process.env[k]?.trim()
+    if (t) return t
+  }
+  return undefined
+}
+
+function envPrivateKey(...keys: string[]): string | undefined {
+  for (const k of keys) {
+    const t = process.env[k]?.trim()
+    if (t) return t.replace(/\\n/g, "\n")
+  }
+  return undefined
+}
+
 function envJsonCreds(): { clientEmail: string; privateKey: string } | null {
   const rawJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON
   if (!rawJson) return null
@@ -60,7 +76,11 @@ function envJsonCreds(): { clientEmail: string; privateKey: string } | null {
   return null
 }
 
-/** Effective Google Sheets config: non-empty file field wins, else env (Option A or JSON). */
+/**
+ * Google Sheets config: **environment variables win** over `app-settings.json` so
+ * production redeploys keep the same credentials without relying on a writable JSON file.
+ * Supports alternate names: `GOOGLE_SHEET_ID`, `GOOGLE_CLIENT_EMAIL`, `GOOGLE_PRIVATE_KEY`.
+ */
 export function getResolvedGoogleSheetsConfig(): {
   spreadsheetId: string
   tab: string
@@ -70,25 +90,22 @@ export function getResolvedGoogleSheetsConfig(): {
   const file = getAppSettings().googleSheets || {}
 
   const spreadsheetId =
-    fileStr(file.spreadsheetId) ?? process.env.GOOGLE_SHEETS_SPREADSHEET_ID?.trim()
-  const tab = fileStr(file.tab) ?? process.env.GOOGLE_SHEETS_TAB?.trim() ?? "Sheet1"
+    envStr("GOOGLE_SHEETS_SPREADSHEET_ID", "GOOGLE_SHEET_ID") ?? fileStr(file.spreadsheetId)
 
-  let clientEmail = fileStr(file.serviceAccountEmail)
-  let privateKey = fileStr(file.serviceAccountPrivateKey)?.replace(/\\n/g, "\n")
+  const tab = envStr("GOOGLE_SHEETS_TAB") ?? fileStr(file.tab) ?? "Sheet1"
+
+  let clientEmail =
+    envStr("GOOGLE_SERVICE_ACCOUNT_EMAIL", "GOOGLE_CLIENT_EMAIL") ?? fileStr(file.serviceAccountEmail)
+
+  let privateKey =
+    envPrivateKey("GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY", "GOOGLE_PRIVATE_KEY") ??
+    fileStr(file.serviceAccountPrivateKey)?.replace(/\\n/g, "\n")
 
   if (!clientEmail || !privateKey) {
     const j = envJsonCreds()
     if (j) {
       clientEmail = clientEmail ?? j.clientEmail
       privateKey = privateKey ?? j.privateKey
-    }
-  }
-  if (!clientEmail || !privateKey) {
-    const e = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL?.trim()
-    const k = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY?.replace(/\\n/g, "\n")
-    if (e && k) {
-      clientEmail = clientEmail ?? e
-      privateKey = privateKey ?? k
     }
   }
 

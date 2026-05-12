@@ -5,6 +5,9 @@ import { ADMIN_BASE_PATH, LEAD_ADMIN_COOKIE } from "@/lib/admin-constants"
 const ADMIN_LOGIN = `${ADMIN_BASE_PATH}/login`
 const MIS = `${ADMIN_BASE_PATH}/misconfigured`
 
+/** Old typo path → canonical admin URL. */
+const LEGACY_ADMIN_PREFIX = "/infozunb-admin"
+
 /**
  * Edge middleware only checks cookie shape; JWT verification runs on the Node server.
  * JWT verification runs on the Node server in admin UI and API routes instead.
@@ -20,6 +23,12 @@ export async function middleware(req: NextRequest) {
   if (pathname === "/admin" || pathname.startsWith("/admin/")) {
     const u = req.nextUrl.clone()
     u.pathname = pathname.replace(/^\/admin/, ADMIN_BASE_PATH)
+    return NextResponse.redirect(u)
+  }
+
+  if (pathname === LEGACY_ADMIN_PREFIX || pathname.startsWith(`${LEGACY_ADMIN_PREFIX}/`)) {
+    const u = req.nextUrl.clone()
+    u.pathname = pathname.replace(/^\/infozunb-admin/, ADMIN_BASE_PATH)
     return NextResponse.redirect(u)
   }
 
@@ -46,5 +55,12 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin", "/admin/:path*", "/infozunb-admin", "/infozunb-admin/:path*"],
+  matcher: [
+    "/admin",
+    "/admin/:path*",
+    "/infozunb-admin",
+    "/infozunb-admin/:path*",
+    "/infozub-admin",
+    "/infozub-admin/:path*",
+  ],
 }
