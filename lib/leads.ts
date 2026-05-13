@@ -2,6 +2,7 @@ import fs from "fs"
 import path from "path"
 import crypto from "crypto"
 import { getDataDirectory } from "@/lib/data-dir"
+import { nowISTOffsetString } from "@/lib/datetime-ist"
 
 export type StoredLead = {
   id: string
@@ -65,7 +66,7 @@ export function appendLead(input: {
     const leads = readLeadsFile()
     const row: StoredLead = {
       id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
+      createdAt: nowISTOffsetString(),
       name: input.name.trim(),
       phone: input.phone.trim(),
       degree: input.degree,

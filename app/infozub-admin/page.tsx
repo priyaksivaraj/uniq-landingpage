@@ -9,10 +9,13 @@ import AdminLeadToolbar from "@/components/admin/AdminLeadToolbar"
 
 function formatWhen(iso: string) {
   try {
-    return new Date(iso).toLocaleString(undefined, {
+    const d = new Date(iso)
+    return new Intl.DateTimeFormat("en-IN", {
+      timeZone: "Asia/Kolkata",
       dateStyle: "medium",
       timeStyle: "short",
-    })
+      timeZoneName: "shortGeneric",
+    }).format(d)
   } catch {
     return iso
   }

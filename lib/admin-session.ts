@@ -6,7 +6,7 @@ export { LEAD_ADMIN_COOKIE }
 const JWT_ALG = "HS256" as const
 
 /** Server-only fallback when `ADMIN_PASSWORD` is unset; never shown in the UI. */
-const DEFAULT_ADMIN_PASSWORD = "admin123"
+const DEFAULT_ADMIN_PASSWORD = "Infozub@6154"
 
 /**
  * Password: `ADMIN_PASSWORD` env if set, otherwise a built-in default (server only, not exposed in UI).
